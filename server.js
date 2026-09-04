@@ -1,78 +1,140 @@
-const express=require("express");
-const cors=require("cors");
-const path=require("path");
-const ytdlp=require("youtube-dl-exec");
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+const ytdlp = require("youtube-dl-exec");
 
-const app=express();
-const PORT=process.env.PORT||10000;
+const app = express();
+const PORT = process.env.PORT || 10000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname,"public")));
+app.use(express.static(path.join(__dirname, "public")));
 
-const formats={
-  ultra:"best[height<=2160]/best",
-  "1080":"best[height<=1080]/best",
-  "780":"best[height<=780]/best",
-  hd:"best[height<=720]/best"
+const formats = {
+  ultra: "best[height<=2160]/best",
+  "1080": "best[height<=1080]/best",
+  "780": "best[height<=780]/best",
+  hd: "best[height<=720]/best"
 };
 
-function valid(url){
-  try{
-    return /(^|\.)tiktok\.com$/i.test(new URL(url).hostname);
-  }catch{
+function valid(url) {
+  try {
+    const host = new URL(url).hostname;
+    return /(^|\.)tiktok\.com$/i.test(host);
+  } catch {
     return false;
   }
 }
 
-app.get("/api/health",(req,res)=>{
-  res.json({ok:true});
+/* HOME */
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.get("/",(req,res)=>{
-  res.sendFile(path.join(__dirname,"public","index.html"));
+/* HEALTH */
+app.get("/api/health", (req, res) => {
+  res.json({
+    ok: true,
+    service: "tiktok-media-downloader"
+  });
 });
 
-app.post("/api/download",async(req,res)=>{
-  const url=String(req.body?.url||"").trim();
-  const quality=String(req.body?.quality||"1080");
+/* VIDEO INFO */
+app.get("/api/info", async (req, res) => {
+  const url = String(req.query.url || "").trim();
 
-  if(!valid(url))
+  if (!valid(url)) {
     return res.status(400).json({
-      success:false,
-      message:"Valid TikTok URL required."
+      success: false,
+      message: "Valid TikTok URL required."
     });
+  }
 
-  try{
-    const output=await ytdlp(url,{
-      getUrl:true,
-      format:formats[quality]||formats["1080"],
-      noPlaylist:true,
-      noWarnings:true
+  try {
+    const info = await ytdlp(url, {
+      dumpSingleJson: true,
+      skipDownload: true,
+      noPlaylist: true,
+      noWarnings: true
     });
-
-    const lines=String(output).trim().split(/\r?\n/).filter(Boolean);
-    const download_url=lines.pop();
-
-    if(!download_url)
-      throw new Error("No media URL");
 
     res.json({
-      success:true,
-      type:"video",
-      quality,
-      download_url
+      success: true,
+      title: info.title || "TikTok Video",
+      thumbnail: info.thumbnail || "",
+      uploader: info.uploader || "",
+      duration: info.duration || 0
     });
 
-  }catch(e){
-    console.error(e);
+  } catch (error) {
+    console.error("INFO ERROR:", error);
+
     res.status(500).json({
-      success:false,
-      message:"Could not download this TikTok video."
+      success: false,
+      message: "Could not get TikTok video information."
     });
   }
 });
 
-app.listen(PORT,"0.0.0.0",()=>{
-  console.log("Server running on port "+PORT);
+/* DOWNLOAD */
+app.post("/api/download", async (req, res) => {
+  const url = String(req.body?.url || "").trim();
+  const quality = String(req.body?.quality || "1080");
+
+  if (!valid(url)) {
+    return res.status(400).json({
+      success: false,
+      message: "Valid TikTok URL required."
+    });
+  }
+
+  const format = formats[quality] || formats["1080"];
+
+  try {
+    const output = await ytdlp(url, {
+      getUrl: true,
+      format: format,
+      noPlaylist: true,
+      noWarnings: true
+    });
+
+    const lines = String(output)
+      .trim()
+      .split(/\r?\n/)
+      .filter(Boolean);
+
+    const download_url = lines[lines.length - 1];
+
+    if (!download_url) {
+      throw new Error("No download URL");
+    }
+
+    res.json({
+      success: true,
+      type: "video",
+      quality: quality,
+      download_url: download_url
+    });
+
+  } catch (error) {
+    console.error("DOWNLOAD ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Could not download this TikTok video."
+    });
+  }
+});
+
+/* 404 */
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found."
+  });
+});
+
+/* START */
+app.listen(PORT, "0.0.0.0", () => {
+  console.log("Server running on port " + PORT);
 });
