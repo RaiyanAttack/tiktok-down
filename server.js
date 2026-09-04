@@ -17,10 +17,14 @@ const formats={
   hd:"best[height<=720]/best"
 };
 
+/* TikTok URL check */
 function valid(url){
   try{
-    return /(^|\.)tiktok\.com$/i.test(
-      new URL(url).hostname
+    const host=new URL(url).hostname.toLowerCase();
+
+    return (
+      host==="tiktok.com" ||
+      host.endsWith(".tiktok.com")
     );
   }catch{
     return false;
@@ -42,7 +46,7 @@ app.get("/api/health",(req,res)=>{
   });
 });
 
-/* INFO */
+/* VIDEO INFO */
 app.get("/api/info",async(req,res)=>{
 
   const url=String(req.query.url||"").trim();
