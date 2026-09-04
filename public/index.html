@@ -1,485 +1,477 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TikTok Media Downloader</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
+<title>TikTok Downloader</title>
 
-    body {
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at top left, #35152b, transparent 35%),
-        radial-gradient(circle at bottom right, #102b3d, transparent 35%),
-        #08090d;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      padding: 30px 15px;
-    }
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:Arial,sans-serif;
+}
 
-    .container {
-      width: 100%;
-      max-width: 650px;
-    }
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at top left,#35152b,transparent 35%),
+    radial-gradient(circle at bottom right,#102b3d,transparent 35%),
+    #08090d;
+  color:white;
+  padding:25px 15px;
+}
 
-    .logo {
-      text-align: center;
-      margin: 30px 0;
-    }
+.container{
+  max-width:600px;
+  margin:auto;
+}
 
-    .logo h1 {
-      font-size: 32px;
-      background: linear-gradient(90deg, #ff0050, #00f2ea);
-      -webkit-background-clip: text;
-      color: transparent;
-    }
+.header{
+  text-align:center;
+  margin:30px 0;
+}
 
-    .logo p {
-      color: #999;
-      margin-top: 8px;
-    }
+.header h1{
+  font-size:32px;
+  background:linear-gradient(90deg,#ff0050,#00f2ea);
+  -webkit-background-clip:text;
+  color:transparent;
+}
 
-    .card {
-      background: rgba(20, 21, 28, .94);
-      border: 1px solid #30313b;
-      border-radius: 20px;
-      padding: 22px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.45);
-    }
+.header p{
+  color:#999;
+  margin-top:8px;
+}
 
-    label {
-      display: block;
-      margin-bottom: 8px;
-      color: #bbb;
-      font-size: 14px;
-    }
+.card{
+  background:#15161c;
+  border:1px solid #30313b;
+  border-radius:20px;
+  padding:22px;
+}
 
-    .input-box {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
+label{
+  display:block;
+  color:#bbb;
+  margin-bottom:8px;
+  font-size:14px;
+}
 
-    input {
-      flex: 1;
-      min-width: 0;
-      background: #0c0d12;
-      border: 1px solid #383944;
-      border-radius: 12px;
-      padding: 15px;
-      color: white;
-      outline: none;
-      font-size: 15px;
-    }
+.input{
+  width:100%;
+  padding:15px;
+  border-radius:12px;
+  border:1px solid #383944;
+  background:#0c0d12;
+  color:white;
+  outline:none;
+  font-size:15px;
+}
 
-    input:focus {
-      border-color: #00f2ea;
-    }
+.input:focus{
+  border-color:#00f2ea;
+}
 
-    button {
-      border: 0;
-      border-radius: 12px;
-      padding: 14px 18px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: .2s;
-    }
+select{
+  width:100%;
+  padding:14px;
+  margin-top:15px;
+  border-radius:12px;
+  background:#0c0d12;
+  border:1px solid #383944;
+  color:white;
+}
 
-    button:active {
-      transform: scale(.97);
-    }
+button{
+  width:100%;
+  padding:15px;
+  margin-top:15px;
+  border:0;
+  border-radius:12px;
+  color:white;
+  background:linear-gradient(90deg,#ff0050,#00b8ff);
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
 
-    .paste {
-      background: #292b35;
-    }
+button:disabled{
+  opacity:.5;
+}
 
-    .download {
-      width: 100%;
-      background: linear-gradient(90deg, #ff0050, #00b8ff);
-      margin-top: 5px;
-      font-size: 16px;
-    }
+.status{
+  text-align:center;
+  margin-top:15px;
+  color:#aaa;
+}
 
-    .download:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-    }
+.loading{
+  display:none;
+  text-align:center;
+  margin-top:20px;
+  color:#aaa;
+}
 
-    .result {
-      display: none;
-      margin-top: 20px;
-      border-top: 1px solid #30313b;
-      padding-top: 20px;
-    }
+.result{
+  display:none;
+  margin-top:20px;
+  border-top:1px solid #333;
+  padding-top:20px;
+}
 
-    .thumb {
-      width: 100%;
-      max-height: 400px;
-      object-fit: cover;
-      border-radius: 15px;
-      background: #111;
-      margin-bottom: 15px;
-    }
+.thumbnail{
+  width:100%;
+  max-height:400px;
+  object-fit:cover;
+  border-radius:15px;
+}
 
-    .title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
+.title{
+  font-size:18px;
+  font-weight:bold;
+  margin-top:15px;
+}
 
-    .author {
-      color: #999;
-      margin-bottom: 15px;
-    }
+.author{
+  color:#999;
+  margin-top:6px;
+}
 
-    .quality {
-      width: 100%;
-      background: #0c0d12;
-      color: white;
-      border: 1px solid #383944;
-      padding: 13px;
-      border-radius: 10px;
-      margin-bottom: 12px;
-    }
+.error{
+  display:none;
+  margin-top:15px;
+  padding:12px;
+  border-radius:10px;
+  background:#32151c;
+  color:#ff8ca5;
+}
 
-    .message {
-      display: none;
-      padding: 13px;
-      border-radius: 10px;
-      margin-top: 15px;
-      background: #24151a;
-      color: #ff8da8;
-    }
-
-    .loading {
-      display: none;
-      text-align: center;
-      padding: 20px;
-      color: #aaa;
-    }
-
-    .spinner {
-      width: 30px;
-      height: 30px;
-      border: 3px solid #333;
-      border-top-color: #00f2ea;
-      border-radius: 50%;
-      animation: spin .8s linear infinite;
-      margin: auto auto 10px;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .footer {
-      text-align: center;
-      color: #666;
-      margin-top: 25px;
-      font-size: 13px;
-    }
-
-    @media(max-width:500px) {
-      .input-box {
-        flex-direction: column;
-      }
-
-      .paste {
-        width: 100%;
-      }
-
-      .logo h1 {
-        font-size: 27px;
-      }
-
-      .card {
-        padding: 17px;
-      }
-    }
-  </style>
+.footer{
+  text-align:center;
+  color:#666;
+  font-size:12px;
+  margin-top:25px;
+}
+</style>
 </head>
 
 <body>
 
-  <main class="container">
+<div class="container">
 
-    <div class="logo">
-      <h1>🎵 TikTok Downloader</h1>
-      <p>Download media from supported TikTok URLs</p>
+  <div class="header">
+    <h1>🎵 TikTok Downloader</h1>
+    <p>Download your supported TikTok videos</p>
+  </div>
+
+  <div class="card">
+
+    <label>TikTok Video URL</label>
+
+    <input
+      id="url"
+      class="input"
+      type="url"
+      placeholder="https://www.tiktok.com/..."
+    >
+
+    <select id="quality">
+      <option value="ultra">Ultra HD</option>
+      <option value="1080" selected>1080p</option>
+      <option value="780">780p</option>
+      <option value="hd">HD / 720p</option>
+    </select>
+
+    <button id="getBtn" onclick="getVideo()">
+      🔍 Get Video
+    </button>
+
+    <div class="loading" id="loading">
+      ⏳ Please wait...
     </div>
 
-    <div class="card">
+    <div class="status" id="status"></div>
 
-      <label for="url">TikTok Video URL</label>
+    <div class="error" id="error"></div>
 
-      <div class="input-box">
-        <input
-          id="url"
-          type="url"
-          placeholder="Paste TikTok URL here..."
-          autocomplete="off"
-        >
+    <div class="result" id="result">
 
-        <button class="paste" onclick="pasteURL()">
-          📋 Paste
-        </button>
+      <img
+        id="thumbnail"
+        class="thumbnail"
+        src=""
+        alt="Thumbnail"
+      >
+
+      <div id="title" class="title">
+        TikTok Video
       </div>
 
-      <button class="download" id="searchBtn" onclick="getVideo()">
-        🔍 Get Video
+      <div id="author" class="author"></div>
+
+      <button id="downloadBtn" onclick="downloadVideo()">
+        ⬇️ Download
       </button>
 
-      <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p>Getting video information...</p>
-      </div>
-
-      <div class="message" id="message"></div>
-
-      <div class="result" id="result">
-
-        <img
-          id="thumbnail"
-          class="thumb"
-          src=""
-          alt="Video thumbnail"
-        >
-
-        <div class="title" id="videoTitle">
-          TikTok Video
-        </div>
-
-        <div class="author" id="author"></div>
-
-        <select id="quality" class="quality">
-          <option value="video">Video</option>
-          <option value="audio">Audio</option>
-        </select>
-
-        <button
-          class="download"
-          id="downloadBtn"
-          onclick="downloadVideo()"
-        >
-          ⬇️ Download
-        </button>
-
-      </div>
-
     </div>
 
-    <div class="footer">
-      Made with ❤️ • Use only content you have permission to download.
-    </div>
+  </div>
 
-  </main>
+  <div class="footer">
+    Use only content you have permission to download.
+  </div>
+
+</div>
 
 <script>
-  /*
-    IMPORTANT:
-    এখানে আপনার Render service URL দিন।
 
-    Example:
-    const API_BASE = "https://your-service.onrender.com";
-  */
+/*
+  IMPORTANT:
+  Same Render server ব্যবহার করছি।
+  তাই আলাদা API URL লাগবে না।
+*/
 
-  const API_BASE = "https://tiktok-video-downloader-6suv.onrender.com";
+const API_BASE = window.location.origin;
 
-  let currentURL = "";
-  let currentData = null;
+let currentURL = "";
 
 
-  // Paste button
-  async function pasteURL() {
-    try {
-      const text = await navigator.clipboard.readText();
+/* SHOW ERROR */
 
-      if (text) {
-        document.getElementById("url").value = text;
-      }
-    } catch (error) {
-      showMessage("Clipboard permission পাওয়া যায়নি। নিজে URL paste করুন।");
-    }
+function showError(message){
+
+  const error = document.getElementById("error");
+
+  error.textContent = "❌ " + message;
+
+  error.style.display = "block";
+}
+
+
+/* HIDE ERROR */
+
+function hideError(){
+
+  document.getElementById("error").style.display = "none";
+
+}
+
+
+/* LOADING */
+
+function loading(state){
+
+  document.getElementById("loading").style.display =
+    state ? "block" : "none";
+
+  document.getElementById("getBtn").disabled = state;
+
+}
+
+
+/* GET VIDEO */
+
+async function getVideo(){
+
+  hideError();
+
+  const url =
+    document.getElementById("url").value.trim();
+
+  if(!url){
+
+    showError("TikTok URL দিন।");
+
+    return;
   }
 
+  if(!/tiktok\.com/i.test(url)){
 
-  // Show error
-  function showMessage(text) {
-    const box = document.getElementById("message");
+    showError("Valid TikTok URL দিন।");
 
-    box.textContent = text;
-    box.style.display = "block";
+    return;
   }
 
+  currentURL = url;
 
-  // Hide error
-  function hideMessage() {
-    document.getElementById("message").style.display = "none";
-  }
+  document.getElementById("result").style.display = "none";
 
+  loading(true);
 
-  // Loading
-  function setLoading(status) {
-    document.getElementById("loading").style.display =
-      status ? "block" : "none";
+  document.getElementById("status").textContent =
+    "Video information নেওয়া হচ্ছে...";
 
-    document.getElementById("searchBtn").disabled = status;
-  }
+  try{
 
+    const response = await fetch(
+      API_BASE +
+      "/api/info?url=" +
+      encodeURIComponent(url)
+    );
 
-  // Get video information
-  async function getVideo() {
+    const data = await response.json();
 
-    hideMessage();
+    if(!response.ok || !data.success){
 
-    const url = document.getElementById("url").value.trim();
-
-    if (!url) {
-      showMessage("Please enter a TikTok URL.");
-      return;
-    }
-
-    if (!/tiktok\.com/i.test(url)) {
-      showMessage("Please enter a valid TikTok URL.");
-      return;
-    }
-
-    currentURL = url;
-
-    setLoading(true);
-
-    document.getElementById("result").style.display = "none";
-
-    try {
-
-      const response = await fetch(
-        API_BASE + "/api/info?url=" + encodeURIComponent(url)
+      throw new Error(
+        data.message || "Video information পাওয়া যায়নি।"
       );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Unable to get video.");
-      }
-
-      currentData = data;
-
-      document.getElementById("videoTitle").textContent =
-        data.title || "TikTok Video";
-
-      document.getElementById("author").textContent =
-        data.author ? "@" + data.author : "";
-
-      if (data.thumbnail) {
-        document.getElementById("thumbnail").src = data.thumbnail;
-        document.getElementById("thumbnail").style.display = "block";
-      } else {
-        document.getElementById("thumbnail").style.display = "none";
-      }
-
-      document.getElementById("result").style.display = "block";
-
-    } catch (error) {
-
-      console.error(error);
-
-      showMessage(
-        error.message || "Something went wrong. Please try again."
-      );
-
-    } finally {
-
-      setLoading(false);
     }
+
+    document.getElementById("title").textContent =
+      data.title || "TikTok Video";
+
+    document.getElementById("author").textContent =
+      data.uploader
+      ? "@" + data.uploader
+      : "";
+
+    const thumbnail =
+      document.getElementById("thumbnail");
+
+    if(data.thumbnail){
+
+      thumbnail.src = data.thumbnail;
+      thumbnail.style.display = "block";
+
+    }else{
+
+      thumbnail.style.display = "none";
+
+    }
+
+    document.getElementById("result").style.display =
+      "block";
+
+    document.getElementById("status").textContent =
+      "✅ Video ready.";
+
+  }catch(error){
+
+    console.error(error);
+
+    showError(error.message);
+
+    document.getElementById("status").textContent = "";
+
+  }finally{
+
+    loading(false);
+
   }
 
+}
 
-  // Download
-  async function downloadVideo() {
 
-    if (!currentURL) {
-      showMessage("First enter a TikTok URL.");
-      return;
-    }
+/* DOWNLOAD */
 
-    const button = document.getElementById("downloadBtn");
+async function downloadVideo(){
 
-    button.disabled = true;
-    button.textContent = "⏳ Preparing...";
+  if(!currentURL){
 
-    hideMessage();
+    showError("আগে একটি TikTok URL দিন।");
 
-    try {
-
-      const quality =
-        document.getElementById("quality").value;
-
-      const downloadURL =
-        API_BASE +
-        "/api/download?url=" +
-        encodeURIComponent(currentURL) +
-        "&type=" +
-        encodeURIComponent(quality);
-
-      /*
-        Open the backend download endpoint.
-        Browser will handle the file download/response.
-      */
-
-      window.location.href = downloadURL;
-
-    } catch (error) {
-
-      showMessage(
-        error.message || "Download failed."
-      );
-
-    } finally {
-
-      setTimeout(() => {
-        button.disabled = false;
-        button.textContent = "⬇️ Download";
-      }, 2000);
-
-    }
+    return;
   }
 
+  hideError();
 
-  // Enter key
-  document.getElementById("url").addEventListener(
-    "keydown",
-    function(event) {
+  const button =
+    document.getElementById("downloadBtn");
 
-      if (event.key === "Enter") {
-        getVideo();
-      }
+  const quality =
+    document.getElementById("quality").value;
 
+  button.disabled = true;
+
+  button.textContent =
+    "⏳ Preparing...";
+
+  try{
+
+    const response =
+      await fetch(API_BASE + "/api/download",{
+
+        method:"POST",
+
+        headers:{
+          "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+
+          url:currentURL,
+
+          quality:quality
+
+        })
+
+      });
+
+    const data =
+      await response.json();
+
+    if(!response.ok || !data.success){
+
+      throw new Error(
+        data.message || "Download failed."
+      );
     }
-  );
+
+    /*
+      Open direct media URL
+    */
+
+    const a =
+      document.createElement("a");
+
+    a.href =
+      data.download_url;
+
+    a.target="_blank";
+
+    a.rel="noopener";
+
+    a.click();
+
+    document.getElementById("status").textContent =
+      "✅ Download link ready.";
+
+  }catch(error){
+
+    console.error(error);
+
+    showError(error.message);
+
+  }finally{
+
+    button.disabled = false;
+
+    button.textContent =
+      "⬇️ Download";
+
+  }
+
+}
 
 
-  // Check backend
-  fetch(API_BASE + "/api/health")
-    .then(response => response.json())
-    .then(data => {
-      console.log("Backend:", data);
-    })
-    .catch(error => {
-      console.log("Backend health check failed:", error);
-    });
+/* ENTER KEY */
+
+document.getElementById("url")
+.addEventListener("keydown",function(e){
+
+  if(e.key==="Enter"){
+
+    getVideo();
+
+  }
+
+});
 
 </script>
 
 </body>
-  </html>
+</html>
