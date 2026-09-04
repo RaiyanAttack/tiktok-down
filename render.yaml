@@ -3,6 +3,6 @@ services:
     name: tiktok-media-downloader
     env: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm install && npx yt-dlp --update-to nightly
     startCommand: npm start
     healthCheckPath: /api/health
