@@ -7,7 +7,7 @@ const app=express();
 const PORT=process.env.PORT||10000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({limit:"1mb"}));
 app.use(express.static(path.join(__dirname,"public")));
 
 const formats={
@@ -17,15 +17,13 @@ const formats={
   hd:"best[height<=720]/best"
 };
 
-/* TikTok URL check */
+/* TikTok URL */
 function valid(url){
   try{
-    const host=new URL(url).hostname.toLowerCase();
+    const u=new URL(url);
+    const h=u.hostname.toLowerCase();
 
-    return (
-      host==="tiktok.com" ||
-      host.endsWith(".tiktok.com")
-    );
+    return h==="tiktok.com" || h.endsWith(".tiktok.com");
   }catch{
     return false;
   }
@@ -46,7 +44,7 @@ app.get("/api/health",(req,res)=>{
   });
 });
 
-/* VIDEO INFO */
+/* INFO */
 app.get("/api/info",async(req,res)=>{
 
   const url=String(req.query.url||"").trim();
@@ -62,9 +60,9 @@ app.get("/api/info",async(req,res)=>{
 
     const info=await ytdlp(url,{
       dumpSingleJson:true,
+      skipDownload:true,
       noPlaylist:true,
       noWarnings:true,
-      skipDownload:true,
       noCheckCertificates:true
     });
 
@@ -78,12 +76,16 @@ app.get("/api/info",async(req,res)=>{
 
   }catch(e){
 
-    console.error("INFO ERROR:",e);
+    const error=String(
+      e.stderr||e.message||e
+    );
+
+    console.error("INFO ERROR:",error);
 
     res.status(500).json({
       success:false,
       message:"TikTok information পাওয়া যায়নি।",
-      error:String(e.stderr||e.message||e)
+      error:error
     });
   }
 });
@@ -91,8 +93,13 @@ app.get("/api/info",async(req,res)=>{
 /* DOWNLOAD */
 app.post("/api/download",async(req,res)=>{
 
-  const url=String(req.body?.url||"").trim();
-  const quality=String(req.body?.quality||"1080");
+  const url=String(
+    req.body?.url||""
+  ).trim();
+
+  const quality=String(
+    req.body?.quality||"1080"
+  );
 
   if(!valid(url)){
     return res.status(400).json({
@@ -101,11 +108,15 @@ app.post("/api/download",async(req,res)=>{
     });
   }
 
+  const format=
+    formats[quality]||
+    formats["1080"];
+
   try{
 
     const output=await ytdlp(url,{
       getUrl:true,
-      format:formats[quality]||formats["1080"],
+      format:format,
       noPlaylist:true,
       noWarnings:true,
       noCheckCertificates:true
@@ -116,10 +127,16 @@ app.post("/api/download",async(req,res)=>{
       .split(/\r?\n/)
       .filter(Boolean);
 
-    const download_url=lines[lines.length-1];
+    const download_url=
+      lines[lines.length-1];
 
-    if(!download_url){
-      throw new Error("No download URL returned");
+    if(
+      !download_url ||
+      !/^https?:\/\//i.test(download_url)
+    ){
+      throw new Error(
+        "No valid media URL returned."
+      );
     }
 
     res.json({
@@ -131,12 +148,19 @@ app.post("/api/download",async(req,res)=>{
 
   }catch(e){
 
-    console.error("DOWNLOAD ERROR:",e);
+    const error=String(
+      e.stderr||e.message||e
+    );
+
+    console.error(
+      "DOWNLOAD ERROR:",
+      error
+    );
 
     res.status(500).json({
       success:false,
-      message:"TikTok video download করা যায়নি।",
-      error:String(e.stderr||e.message||e)
+      message:"TikTok video পাওয়া যায়নি।",
+      error:error
     });
   }
 });
@@ -151,5 +175,7 @@ app.use((req,res)=>{
 
 /* START */
 app.listen(PORT,"0.0.0.0",()=>{
-  console.log("Server running on port "+PORT);
+  console.log(
+    "Server running on port "+PORT
+  );
 });
